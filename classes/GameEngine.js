@@ -1,4 +1,3 @@
-import Timer from './Timer.js'
 import Entity from './Entity.js'
 import gameProperties from '../gameProperties.js'
 
@@ -45,7 +44,7 @@ class GameEngine {
 		 */
 		this.entities = []
 
-		// Initialize the input events and the timer of the game
+		// Initialize the input events
 		this.initInput()
 	}
 

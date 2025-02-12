@@ -1,5 +1,6 @@
 import BoardBlock from './BoardBlock.js'
 import Entity from './Entity.js'
+import Block from './Block.js'
 
 /**
  * Represents a game board
@@ -65,28 +66,29 @@ class Board extends Entity {
 		for (const rowIndex in this.board) {
 			for (const columnIndex in this.board[rowIndex]) {
 				const block = this.board[rowIndex][columnIndex]
+				const xPos = 90 + this.blockSize() * columnIndex
+				const yPos = 90 + this.blockSize() * rowIndex
 
 				if (block instanceof BoardBlock) {
 					ctx.fillStyle = block.color
-				} else if (block == 'shadow') {
+				} else if (block == 'hint') {
 					ctx.fillStyle = '#bbbbff22'
 				} else {
 					ctx.fillStyle = '#000055aa'
 				}
 
 				ctx.beginPath()
-				ctx.fillRect(
-					90 + this.blockSize() * columnIndex,
-					90 + this.blockSize() * rowIndex,
-					this.blockSize(),
-					this.blockSize()
-				)
+				ctx.fillRect(xPos, yPos, this.blockSize(), this.blockSize())
 				ctx.strokeRect(
-					90 + strokeOffset + this.blockSize() * columnIndex,
-					90 + strokeOffset + this.blockSize() * rowIndex,
+					xPos + strokeOffset,
+					yPos + strokeOffset,
 					this.blockSize() - strokeOffset * 2,
 					this.blockSize() - strokeOffset * 2
 				)
+
+				if (block instanceof BoardBlock) {
+					Block.drawShadow(ctx, xPos, yPos, this.blockSize(), 15)
+				}
 			}
 		}
 	}
@@ -141,12 +143,12 @@ class Board extends Entity {
 	}
 
 	/**
-	 * Clear all shadow blocks from the board
+	 * Clear all hint blocks from the board
 	 */
-	clearShadowBlocks() {
+	clearHintBlocks() {
 		for (const row of this.board) {
 			for (let i = 0; i < row.length; i++) {
-				if (row[i] == 'shadow') {
+				if (row[i] == 'hint') {
 					row[i] = null
 				}
 			}
@@ -154,14 +156,14 @@ class Board extends Entity {
 	}
 
 	/**
-	 * Adds a shadow block to the board
+	 * Adds a hint block to the board
 	 * @param {number} x - The x-coordinate
 	 * @param {number} y - The y-coordinate
 	*/
-	insertShadowBlock(x, y) {
+	insertHintBlock(x, y) {
 		const row = Math.round((y - 90) / this.blockSize())
 		const column = Math.round((x - 90) / this.blockSize())
-		this.board[row][column] = 'shadow'
+		this.board[row][column] = 'hint'
 	}
 
 	/**

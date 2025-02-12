@@ -54,6 +54,55 @@ class Block extends Entity {
 	}
 
 	/**
+	 * Draws a shadow for the block
+	 * @param {number} xPos - The x position of the block
+	 * @param {number} yPos - The y position of the block
+	 * @param {number} blockSize - The size of the block
+	 * @param {number} shaddowOffset - The offset of the shadow
+	 */
+	static drawShadow(ctx, xPos, yPos, blockSize, shaddowOffset) {
+		// Create a shadow effect for the block by drawing a trapezoid on the top with a lighter tint
+		ctx.fillStyle = '#ffffff60'
+		ctx.beginPath()
+		ctx.moveTo(xPos, yPos)
+		ctx.lineTo(xPos + blockSize, yPos)
+		ctx.lineTo(xPos + blockSize - shaddowOffset, yPos + shaddowOffset)
+		ctx.lineTo(xPos + shaddowOffset, yPos + shaddowOffset)
+		ctx.closePath()
+		ctx.fill()
+
+		// Create a shadow effect for the block by drawing a trapezoid on the right with a darker tint
+		ctx.fillStyle = '#00000030'
+		ctx.beginPath()
+		ctx.moveTo(xPos + blockSize, yPos)
+		ctx.lineTo(xPos + blockSize, yPos + blockSize)
+		ctx.lineTo(xPos + blockSize - shaddowOffset, yPos + blockSize - shaddowOffset)
+		ctx.lineTo(xPos + blockSize - shaddowOffset, yPos + shaddowOffset)
+		ctx.closePath()
+		ctx.fill()
+
+		// Create a shadow effect for the block by drawing a trapezoid on the bottom with a darker tint
+		ctx.fillStyle = '#00000050'
+		ctx.beginPath()
+		ctx.moveTo(xPos, yPos + blockSize)
+		ctx.lineTo(xPos + blockSize, yPos + blockSize)
+		ctx.lineTo(xPos + blockSize - shaddowOffset, yPos + blockSize - shaddowOffset)
+		ctx.lineTo(xPos + shaddowOffset, yPos + blockSize - shaddowOffset)
+		ctx.closePath()
+		ctx.fill()
+
+		// Create a shadow effect for the block by drawing a trapezoid on the left with a lighter tint
+		ctx.fillStyle = '#ffffff30'
+		ctx.beginPath()
+		ctx.moveTo(xPos, yPos)
+		ctx.lineTo(xPos, yPos + blockSize)
+		ctx.lineTo(xPos + shaddowOffset, yPos + blockSize - shaddowOffset)
+		ctx.lineTo(xPos + shaddowOffset, yPos + shaddowOffset)
+		ctx.closePath()
+		ctx.fill()
+	}
+
+	/**
 	 * Generates a random block
 	 */
 	generateRandomShape() {
@@ -88,9 +137,9 @@ class Block extends Entity {
 		}
 
 		if (this.gameEngine.mousemove && this.active) {
-			this.board.clearShadowBlocks()
+			this.board.clearHintBlocks()
 			if (this.canInsertIntoBoard()) {
-				this.insertShadowIntoBoard()
+				this.insertHintIntoBoard()
 			}
 		}
 
@@ -118,7 +167,6 @@ class Block extends Entity {
 
 		ctx.strokeStyle = '#000000ff'
 		ctx.lineWidth = strokeWidth
-		ctx.fillStyle = this.color
 
 		const rowSize = this.shape.length
 		const columnSize = this.shape[0].length
@@ -133,14 +181,20 @@ class Block extends Entity {
 		for (const row in this.shape) {
 			for (const column in this.shape[row]) {
 				if (this.shape[row][column]) {
+					const xPos = x + column * blockSize
+					const yPos = y + row * blockSize
+
+					ctx.fillStyle = this.color
 					ctx.beginPath()
 					ctx.strokeRect(
-						x + column * blockSize - strokeOffset,
-						y + row * blockSize - strokeOffset,
+						xPos - strokeOffset,
+						yPos - strokeOffset,
 						blockSize + strokeOffset * 2,
 						blockSize + strokeOffset * 2
 					)
 					ctx.fillRect(x + column * blockSize, y + row * blockSize, blockSize, blockSize)
+
+					Block.drawShadow(ctx, xPos, yPos, blockSize, 15)
 				}
 			}
 		}
@@ -154,7 +208,6 @@ class Block extends Entity {
 
 		ctx.strokeStyle = '#000000ff'
 		ctx.lineWidth = strokeWidth / 2
-		ctx.fillStyle = this.color
 
 		const rowSize = this.shape.length
 		const columnSize = this.shape[0].length
@@ -165,14 +218,20 @@ class Block extends Entity {
 		for (const row in this.shape) {
 			for (const column in this.shape[row]) {
 				if (this.shape[row][column]) {
+					const xPos = x + column * blockSize
+					const yPos = y + row * blockSize
+
+					ctx.fillStyle = this.color
 					ctx.beginPath()
 					ctx.strokeRect(
-						x + column * blockSize - strokeOffset / 2,
-						y + row * blockSize - strokeOffset / 2,
+						xPos - strokeOffset / 2,
+						yPos - strokeOffset / 2,
 						blockSize + strokeOffset,
 						blockSize + strokeOffset
 					)
-					ctx.fillRect(x + column * blockSize, y + row * blockSize, blockSize, blockSize)
+					ctx.fillRect(xPos, yPos, blockSize, blockSize)
+
+					Block.drawShadow(ctx, xPos, yPos, blockSize, 10)
 				}
 			}
 		}
@@ -224,7 +283,7 @@ class Block extends Entity {
 		}
 	}
 
-	insertShadowIntoBoard() {
+	insertHintIntoBoard() {
 		const rowSize = this.shape.length
 		const columnSize = this.shape[0].length
 		const blockSize = this.size
@@ -238,7 +297,7 @@ class Block extends Entity {
 		for (const row in this.shape) {
 			for (const column in this.shape[row]) {
 				if (this.shape[row][column]) {
-					this.board.insertShadowBlock(x + column * blockSize, y + row * blockSize)
+					this.board.insertHintBlock(x + column * blockSize, y + row * blockSize)
 				}
 			}
 		}
