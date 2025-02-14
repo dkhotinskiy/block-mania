@@ -9,7 +9,7 @@ class Entity {
 	 * @param {number} size - The size of the entity
 	 * @param {number} scale - The scale of the entity
 	 */
-	constructor(gameEngine, x = 0, y = 0, size = 80, scale = 1) {
+	constructor(gameEngine, x = 0, y = 0, blockSize = 80, scale = 1) {
 		/**
 		 * The game engine of the entity
 		 * @type {GameEngine}
@@ -32,7 +32,7 @@ class Entity {
 		 * The size of the entity
 		 * @type {number}
 		 */
-		this.size = size
+		this.blockSize = blockSize
 
 		/**
 		 * The scale of the entity

@@ -1,6 +1,6 @@
 import gameProperties from './gameProperties.js'
 import Board from './classes/Board.js'
-import BlockBag from './classes/BlockBag.js'
+import ShapeBag from './classes/ShapeBag.js'
 import GameEngine from './classes/GameEngine.js'
 
 // Initialize function for dinamically scalling the canvas to fit the window
@@ -32,8 +32,9 @@ const initGame = () => {
 	gameEngine.addEntity(board)
 
 	// Create a new block bag
-	const blockBag = new BlockBag(gameEngine, board, 90, 1530)
-	gameEngine.addEntity(blockBag)
+	const shapeBag = new ShapeBag(gameEngine, board, 90, 1530)
+	gameEngine.addEntity(shapeBag)
+	board.addBag(shapeBag)
 }
 
 // Set canvas and its context to variable

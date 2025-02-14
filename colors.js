@@ -1,4 +1,4 @@
-const blockColors = [
+const colors = [
     '#e5bf00',
     '#ff5733',
     '#33ff57',
@@ -8,4 +8,4 @@ const blockColors = [
     '#ff8c33'
 ]
 
-export default blockColors
+export default colors

@@ -67,48 +67,69 @@ class GameEngine {
 	 * Initializes the input events of the game
 	 */
 	initInput() {
-		this.ctx.canvas.addEventListener('mousemove', e => {
-			this.mousemove = this.getXY(e)
-			this.debug('Mouse move event:', this.mousemove)
-			this.updateEntities()
-			this.draw()
-		})
+		this.ctx.canvas.addEventListener('mousedown', this.setMouseDown.bind(this))
+		this.ctx.canvas.addEventListener('mousemove', this.setMouseMove.bind(this))
+		this.ctx.canvas.addEventListener('mouseup', this.setMouseUp.bind(this))
 
-		this.ctx.canvas.addEventListener('mousedown', e => {
-			this.mousedown = this.getXY(e)
-			this.debug('Mouse down event:', this.mousedown)
-			this.updateEntities()
-			this.draw()
-		})
+		this.ctx.canvas.addEventListener('touchstart', this.setMouseDown.bind(this))
+		this.ctx.canvas.addEventListener('touchmove', this.setMouseMove.bind(this))
+		this.ctx.canvas.addEventListener('touchend', this.setMouseUp.bind(this))
+	}
 
-		this.ctx.canvas.addEventListener('mouseup', e => {
-			this.mousedown = null
-			this.mouseup = this.getXY(e)
-			this.debug('Mouse up event:', this.mouseup)
-			this.updateEntities()
-			this.draw()
-			this.mouseup = null
-		})
+	/**
+	 * Set the mouse down event
+	 * @param {MouseEvent} e - The event
+	 */
+	setMouseDown(e) {
+		e.preventDefault()
+		this.mousedown = this.getXY(e)
+		this.mousemove = this.mousedown
+		this.debug('Mouse down event:', this.mousedown)
+		this.updateEntities()
+		this.draw()
+		console.log(this.mousedown)
+	}
+
+	/**
+	 * Set the mouse move event
+	 * @param {MouseEvent} e - The event
+	 */
+	setMouseMove(e) {
+		e.preventDefault()
+		this.mousemove = this.getXY(e)
+		this.debug('Mouse move event:', this.mousemove)
+		this.updateEntities()
+		this.draw()
+	}
+
+	/**
+	 * Set the mouse up event
+	 * @param {MouseEvent} e - The event
+	 */
+	setMouseUp(e) {
+		e.preventDefault()
+		this.mousedown = null
+		this.mouseup = this.getXY(e)
+		this.debug('Mouse up event:', this.mouseup)
+		this.updateEntities()
+		this.draw()
+		this.mouseup = null
 	}
 
 	/**
 	 * Get the coordinate position of the event
-	 * @param {MouseEvent | WheelEvent | KeyboardEvent} e - The event
+	 * @param {MouseEvent | TouchEvent} e - The event
 	 * @returns {PositionalCoordinates} The x and y coordinates of the event
 	 */
 	getXY(e) {
-		if (!(
-			e instanceof MouseEvent ||
-			e instanceof WheelEvent ||
-			e instanceof KeyboardEvent
-		)) {
-			throw new Error('The event must be an instance of MouseEvent, WheelEvent or KeyboardEvent', e)
+		if (!(e instanceof MouseEvent || e instanceof TouchEvent)) {
+			throw new Error('The event must be an instance of MouseEvent or TouchEvent', e)
 		}
 
 		const ratio = parseFloat(document.body.dataset.ratio)
 		const { top, left } = this.ctx.canvas.getBoundingClientRect()
-		const x = (e.clientX - left) / ratio
-		const y = (e.clientY - top) / ratio
+		const x = (e.pageX - left) / ratio
+		const y = (e.pageY - top) / ratio
 		return { x, y }
 	}
 

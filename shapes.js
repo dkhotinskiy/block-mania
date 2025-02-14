@@ -1,4 +1,4 @@
-const blockShapes = [
+const shapes = [
 	[
 		[1, 1],
 		[1, 1]
@@ -107,4 +107,4 @@ const blockShapes = [
 	]
 ]
 
-export default blockShapes
+export default shapes
