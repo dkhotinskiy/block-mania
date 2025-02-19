@@ -1,7 +1,7 @@
-import Block from './Block.js'
+import Shape from './Shape.js'
 import Entity from './Entity.js'
 
-class BlockBag extends Entity {
+class ShapeBag extends Entity {
 	constructor(gameEngine, board, x, y) {
 		super(gameEngine, x, y, 0, 0)
 
@@ -36,7 +36,7 @@ class BlockBag extends Entity {
 
 		/**
 		 * The bag of blocks
-		 * @type {Array.<Block>}
+		 * @type {Array.<Shape>}
 		 */
 		this.bag = []
 
@@ -65,23 +65,25 @@ class BlockBag extends Entity {
 	 * Fills the bag with blocks
 	 */
 	fillBag() {
-		this.bag = []
+		if (this.bag.length > 0) return
+
+		// Fill the bag with 3 random blocks
 		for (let i = 0; i < 3; i++) {
-			const block = new Block(
+			const shape = new Shape(
 				this.gameEngine,
 				this.board,
 				'random',
 				'random',
 				this.x + 312.5 * i,
 				this.y + 25,
-				this.board.blockSize(),
-				275 / 5 / this.board.blockSize()
+				this.board.getBlockSize(),
+				275 / 5 / this.board.getBlockSize()
 			)
 
-			this.bag.push(block)
-			this.gameEngine.addEntity(block)
+			this.bag.push(shape)
+			this.gameEngine.addEntity(shape)
 		}
 	}
 }
 
-export default BlockBag
+export default ShapeBag
