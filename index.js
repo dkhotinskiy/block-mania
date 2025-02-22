@@ -6,14 +6,22 @@ import GameEngine from './classes/GameEngine.js'
 // Initialize function for dinamically scalling the canvas to fit the window
 const resizeCanvas = () => {
 	const windowBounds = document.body.getBoundingClientRect()
-	const verticalRatio = windowBounds.height / gameProperties.height
-	const horizontalRatio = windowBounds.width / gameProperties.width
+	const computedStyle = getComputedStyle(document.body)
+	const height = windowBounds.height - parseFloat(computedStyle.paddingTop) - parseFloat(computedStyle.paddingBottom)
+	const width = windowBounds.width - parseFloat(computedStyle.paddingLeft) - parseFloat(computedStyle.paddingRight)
+
+	const verticalRatio = height / gameProperties.height
+	const horizontalRatio = width / gameProperties.width
 	const ratio = verticalRatio < horizontalRatio ? verticalRatio : horizontalRatio
 	canvas.style.transform = `scale(${ratio})`
 	document.body.dataset.ratio = ratio
 }
 
 const initGame = () => {
+	// Set the background color of the body and canvas
+	document.body.style.backgroundColor = gameProperties.backgroundColor
+	canvas.style.backgroundColor = gameProperties.backgroundColor
+
 	// Set the size of the canvas
 	canvas.height = gameProperties.height
 	canvas.width = gameProperties.width

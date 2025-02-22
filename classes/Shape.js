@@ -1,4 +1,5 @@
 import Entity from './Entity.js'
+import Board from './Board.js'
 import shapes from '../shapes.js'
 import colors from '../colors.js'
 
@@ -48,6 +49,7 @@ class Shape extends Entity {
 		// If the type is a number, get the color from the blockColor array
 		if (color[0] == '#') {
 			this.color = color
+			this.hintColor = color + '70'
 		} else this.generateRandomColor()
 
 		this.draw()
@@ -115,7 +117,8 @@ class Shape extends Entity {
 	 */
 	generateRandomColor() {
 		const randomIndex = Math.round(Math.random() * (colors.length - 1))
-		this.color = colors[randomIndex]
+		this.color = colors[randomIndex].main
+		this.hintColor = colors[randomIndex].hint
 	}
 
 	/**
@@ -138,12 +141,15 @@ class Shape extends Entity {
 
 		if (this.gameEngine.mousemove && this.active) {
 			this.board.clearHintBlocks()
+			this.board.clearSweepHint()
 			if (this.canInsertIntoBoard()) {
 				this.insertHintIntoBoard()
+				this.board.sweepHint()
 			}
 		}
 
 		if (this.gameEngine.mouseup && this.active) {
+			this.board.clearSweepHint()
 			if (this.canInsertIntoBoard()) {
 				this.insertIntoBoard()
 				this.removeFromWorld = true
@@ -170,31 +176,31 @@ class Shape extends Entity {
 
 		const rowSize = this.blockStructure.length
 		const columnSize = this.blockStructure[0].length
-		const blockSize = this.blockSize
-		const offsetX = blockSize * 5 * (1 - this.scale) / 2
-		const offsetY = blockSize * 5 * (1 - this.scale) / 2
+		const offsetX = this.blockSize * 5 * (1 - this.scale) / 2
+		const offsetY = this.blockSize * 5 * (1 - this.scale) / 2
 		const mouseOffsetX = this.mouseX - this.gameEngine.mousemove.x
 		const mouseOffsetY = this.mouseY - this.gameEngine.mousemove.y
-		const x = this.x - offsetX + (blockSize * 5 - columnSize * blockSize) / 2 - mouseOffsetX
-		const y = this.y - offsetY + (blockSize * 5 - rowSize * blockSize) / 2 - mouseOffsetY
+		const touchOffset = this.gameEngine.mousemove.isTouch ? this.blockSize * 3 : 0
+		const x = this.x - offsetX + (this.blockSize * 5 - columnSize * this.blockSize) / 2 - mouseOffsetX
+		const y = this.y - offsetY + (this.blockSize * 5 - rowSize * this.blockSize) / 2 - mouseOffsetY - touchOffset
 
 		for (const row in this.blockStructure) {
 			for (const column in this.blockStructure[row]) {
 				if (this.blockStructure[row][column]) {
-					const xPos = x + column * blockSize
-					const yPos = y + row * blockSize
+					const xPos = x + column * this.blockSize
+					const yPos = y + row * this.blockSize
 
 					ctx.fillStyle = this.color
 					ctx.beginPath()
 					ctx.strokeRect(
 						xPos - strokeOffset,
 						yPos - strokeOffset,
-						blockSize + strokeOffset * 2,
-						blockSize + strokeOffset * 2
+						this.blockSize + strokeOffset * 2,
+						this.blockSize + strokeOffset * 2
 					)
-					ctx.fillRect(x + column * blockSize, y + row * blockSize, blockSize, blockSize)
+					ctx.fillRect(x + column * this.blockSize, y + row * this.blockSize, this.blockSize, this.blockSize)
 
-					Shape.drawShadow(ctx, xPos, yPos, blockSize, 15)
+					Shape.drawShadow(ctx, xPos, yPos, this.blockSize, 15)
 				}
 			}
 		}
@@ -248,8 +254,9 @@ class Shape extends Entity {
 		const offsetY = this.blockSize * 5 * (1 - this.scale) / 2
 		const mouseOffsetX = this.mouseX - this.gameEngine.mousemove.x
 		const mouseOffsetY = this.mouseY - this.gameEngine.mousemove.y
+		const touchOffset = this.gameEngine.mousemove.isTouch ? this.blockSize * 3 : 0
 		const x = this.x - offsetX + (this.blockSize * 5 - columnSize * this.blockSize) / 2 - mouseOffsetX
-		const y = this.y - offsetY + (this.blockSize * 5 - rowSize * this.blockSize) / 2 - mouseOffsetY
+		const y = this.y - offsetY + (this.blockSize * 5 - rowSize * this.blockSize) / 2 - mouseOffsetY - touchOffset
 
 		let canInsert = true
 
@@ -276,8 +283,9 @@ class Shape extends Entity {
 		const offsetY = this.blockSize * 5 * (1 - this.scale) / 2
 		const mouseOffsetX = this.mouseX - this.gameEngine.mousemove.x
 		const mouseOffsetY = this.mouseY - this.gameEngine.mousemove.y
+		const touchOffset = this.gameEngine.mousemove.isTouch ? this.blockSize * 3 : 0
 		const x = this.x - offsetX + (this.blockSize * 5 - columnSize * this.blockSize) / 2 - mouseOffsetX
-		const y = this.y - offsetY + (this.blockSize * 5 - rowSize * this.blockSize) / 2 - mouseOffsetY
+		const y = this.y - offsetY + (this.blockSize * 5 - rowSize * this.blockSize) / 2 - mouseOffsetY - touchOffset
 
 		for (const row in this.blockStructure) {
 			for (const column in this.blockStructure[row]) {
@@ -298,13 +306,14 @@ class Shape extends Entity {
 		const offsetY = this.blockSize * 5 * (1 - this.scale) / 2
 		const mouseOffsetX = this.mouseX - this.gameEngine.mousemove.x
 		const mouseOffsetY = this.mouseY - this.gameEngine.mousemove.y
+		const touchOffset = this.gameEngine.mousemove.isTouch ? this.blockSize * 3 : 0
 		const x = this.x - offsetX + (this.blockSize * 5 - columnSize * this.blockSize) / 2 - mouseOffsetX
-		const y = this.y - offsetY + (this.blockSize * 5 - rowSize * this.blockSize) / 2 - mouseOffsetY
+		const y = this.y - offsetY + (this.blockSize * 5 - rowSize * this.blockSize) / 2 - mouseOffsetY - touchOffset
 
 		for (const row in this.blockStructure) {
 			for (const column in this.blockStructure[row]) {
 				if (this.blockStructure[row][column]) {
-					this.board.insertHintBlock(x + column * this.blockSize, y + row * this.blockSize)
+					this.board.insertHintBlock(x + column * this.blockSize, y + row * this.blockSize, this.hintColor)
 				}
 			}
 		}

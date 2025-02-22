@@ -67,36 +67,39 @@ class GameEngine {
 	 * Initializes the input events of the game
 	 */
 	initInput() {
-		this.ctx.canvas.addEventListener('mousedown', this.setMouseDown.bind(this))
-		this.ctx.canvas.addEventListener('mousemove', this.setMouseMove.bind(this))
-		this.ctx.canvas.addEventListener('mouseup', this.setMouseUp.bind(this))
+		this.ctx.canvas.addEventListener('mousedown', e => this.setMouseDown(e))
+		this.ctx.canvas.addEventListener('mousemove', e => this.setMouseMove(e))
+		this.ctx.canvas.addEventListener('mouseup', e => this.setMouseUp(e))
 
-		this.ctx.canvas.addEventListener('touchstart', this.setMouseDown.bind(this))
-		this.ctx.canvas.addEventListener('touchmove', this.setMouseMove.bind(this))
-		this.ctx.canvas.addEventListener('touchend', this.setMouseUp.bind(this))
+		this.ctx.canvas.addEventListener('touchstart', e => this.setMouseDown(e, true))
+		this.ctx.canvas.addEventListener('touchmove', e => this.setMouseMove(e, true))
+		this.ctx.canvas.addEventListener('touchend', e => this.setMouseUp(e, true))
 	}
 
 	/**
 	 * Set the mouse down event
 	 * @param {MouseEvent} e - The event
+	 * @param {boolean} isTouch - Whether the event is a touch event
 	 */
-	setMouseDown(e) {
+	setMouseDown(e, isTouch = false) {
 		e.preventDefault()
 		this.mousedown = this.getXY(e)
 		this.mousemove = this.mousedown
+		this.mousedown.isTouch = isTouch
 		this.debug('Mouse down event:', this.mousedown)
 		this.updateEntities()
 		this.draw()
-		console.log(this.mousedown)
 	}
 
 	/**
 	 * Set the mouse move event
 	 * @param {MouseEvent} e - The event
+	 * @param {boolean} isTouch - Whether the event is a touch event
 	 */
-	setMouseMove(e) {
+	setMouseMove(e, isTouch = false) {
 		e.preventDefault()
 		this.mousemove = this.getXY(e)
+		this.mousemove.isTouch = isTouch
 		this.debug('Mouse move event:', this.mousemove)
 		this.updateEntities()
 		this.draw()
@@ -105,11 +108,13 @@ class GameEngine {
 	/**
 	 * Set the mouse up event
 	 * @param {MouseEvent} e - The event
+	 * @param {boolean} isTouch - Whether the event is a touch event
 	 */
-	setMouseUp(e) {
+	setMouseUp(e, isTouch = false) {
 		e.preventDefault()
 		this.mousedown = null
 		this.mouseup = this.getXY(e)
+		this.mouseup.isTouch = isTouch
 		this.debug('Mouse up event:', this.mouseup)
 		this.updateEntities()
 		this.draw()
