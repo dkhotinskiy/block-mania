@@ -152,6 +152,7 @@ class Shape extends Entity {
 			this.board.clearSweepHint()
 			if (this.canInsertIntoBoard()) {
 				this.insertIntoBoard()
+				this.board.addShapeScore(this.blockStructure)
 				this.removeFromWorld = true
 			}
 

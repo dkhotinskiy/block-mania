@@ -1,14 +1,18 @@
-import { lightenColor } from '../util.js'
+import { darkenColor, lightenColor } from '../util.js'
 import Block from './Block.js'
 import Entity from './Entity.js'
 import Shape from './Shape.js'
 import ShapeBag from './ShapeBag.js'
+import gameProperties from '../gameProperties.js'
+
+const topPadding = 270
+const leftPadding = 90
 
 /**
  * Represents a game board
  */
 class Board extends Entity {
-	constructor(gameEngine, boardSize) {
+	constructor(gameEngine, boardSize, targetScore) {
 		super(gameEngine, 0, 0, 0, 0)
 
 		/**
@@ -70,6 +74,18 @@ class Board extends Entity {
 		 */
 		this.blockBorderWidth = 2
 
+		/**
+		 * The score of the game
+		 * @type {number}
+		 */
+		this.score = 0
+
+		/**
+		 * The target score of the game
+		 * @type {number}
+		 */
+		this.targetScore = targetScore
+
 		this.draw()
 	}
 
@@ -84,13 +100,13 @@ class Board extends Entity {
 	/**
 	 * Check if the game is over
 	 */
-	checkGameOver() {
+	isGameLost() {
 		// Loop through the board, checking if shapes can be placed
 		for (const rowIndex in this.board) {
 			for (const columnIndex in this.board[rowIndex]) {
 				const block = this.board[rowIndex][columnIndex]
 
-				if (!(block instanceof Block)) {
+				if (block === null || block.hint) {
 					for (const shape of this.shapeBag.bag) {
 						if (this.canPlaceShape(shape, rowIndex, columnIndex)) {
 							return false
@@ -110,7 +126,7 @@ class Board extends Entity {
 	 * @param {string} columnIndex - The column index to check
 	 */
 	canPlaceShape(shape, rowIndex, columnIndex) {
-		shape.blockStructure.every((blockRow, blockRowIndex) =>
+		return shape.blockStructure.every((blockRow, blockRowIndex) =>
 			blockRow.every((blockCell, blockColumnIndex) => {
 				const row = parseInt(rowIndex) + blockRowIndex
 				const column = parseInt(columnIndex) + blockColumnIndex
@@ -118,7 +134,10 @@ class Board extends Entity {
 				return blockCell == 0 || (
 					row < this.boardSize &&
 					column < this.boardSize &&
-					!(this.board[row][column] instanceof Block)
+					(
+						this.board[row][column] === null ||
+						this.board[row][column].hint
+					)
 				)
 			})
 		)
@@ -142,10 +161,10 @@ class Board extends Entity {
 		ctx.lineWidth = this.blockBorderWidth
 		ctx.beginPath()
 		ctx.strokeRect(
-			90 - this.blockBorderWidth / 2,
-			90 - this.blockBorderWidth / 2,
-			ctx.canvas.width - 180 + this.blockBorderWidth,
-			ctx.canvas.width - 180 + this.blockBorderWidth
+			leftPadding - this.blockBorderWidth / 2,
+			topPadding - this.blockBorderWidth / 2,
+			ctx.canvas.width - leftPadding * 2 + this.blockBorderWidth,
+			ctx.canvas.width - leftPadding * 2 + this.blockBorderWidth
 		)
 
 		// Draw the board grid
@@ -153,8 +172,8 @@ class Board extends Entity {
 		for (const rowIndex in this.board) {
 			for (const columnIndex in this.board[rowIndex]) {
 				const blockSize = this.getBlockSize()
-				const xPos = 90 + blockSize * columnIndex
-				const yPos = 90 + blockSize * rowIndex
+				const xPos = leftPadding + blockSize * columnIndex
+				const yPos = topPadding + blockSize * rowIndex
 				this.drawBlock(ctx, null, blockSize, xPos, yPos)
 			}
 		}
@@ -164,8 +183,8 @@ class Board extends Entity {
 
 				if (block instanceof Block && block.sweepStage === null) {
 					const blockSize = this.getBlockSize()
-					const xPos = 90 + blockSize * columnIndex
-					const yPos = 90 + blockSize * rowIndex
+					const xPos = leftPadding + blockSize * columnIndex
+					const yPos = topPadding + blockSize * rowIndex
 					this.drawBlock(ctx, block, blockSize, xPos, yPos)
 				}
 			}
@@ -191,6 +210,21 @@ class Board extends Entity {
 			setTimeout(() => {
 				this.gameEngine.draw()
 			}, 5)
+		}
+
+		this.drawScore(ctx)
+
+		if (this.isGameWon()) {
+			this.gameEngine.gameWon()
+		}
+
+		// Check if the game is lost
+		if (
+			this.elementsToSweep.length == 0 &&
+			this.shapeBag instanceof ShapeBag &&
+			this.isGameLost()
+		) {
+			this.gameEngine.gameLost()
 		}
 	}
 
@@ -231,8 +265,8 @@ class Board extends Entity {
 	 */
 	drawSweepHint(ctx, mode, index) {
 		const blockSize = this.getBlockSize()
-		const xPos = mode == 'row' ? 90 : 90 + blockSize * index
-		const yPos = mode == 'row' ? 90 + blockSize * index : 90
+		const xPos = mode == 'row' ? leftPadding : leftPadding + blockSize * index
+		const yPos = mode == 'row' ? topPadding + blockSize * index : topPadding
 		const width = mode == 'row' ? blockSize * this.boardSize : blockSize
 		const height = mode == 'row' ? blockSize : blockSize * this.boardSize
 
@@ -262,22 +296,22 @@ class Board extends Entity {
 	drawBlockSweep(ctx, block) {
 		if (block.sweepStage < 0) {
 			const blockSize = this.getBlockSize()
-			const xPos = 90 + blockSize * block.columnIndex
-			const yPos = 90 + blockSize * block.rowIndex
+			const xPos = leftPadding + blockSize * block.columnIndex
+			const yPos = topPadding + blockSize * block.rowIndex
 			this.drawBlock(ctx, block, blockSize, xPos, yPos)
 			block.sweepStage += 0.85
 		} else if (block.sweepStage < 30) {
 			const blockSize = this.getBlockSize()
-			const xPos = 90 + blockSize * block.columnIndex - block.sweepStage / 2
-			const yPos = 90 + blockSize * block.rowIndex - block.sweepStage / 2
+			const xPos = leftPadding + blockSize * block.columnIndex - block.sweepStage / 2
+			const yPos = topPadding + blockSize * block.rowIndex - block.sweepStage / 2
 			const newBlockSize = blockSize + block.sweepStage
 			const shaddowOffsetScale = newBlockSize / blockSize * 1.2
 			this.drawBlock(ctx, block, newBlockSize, xPos, yPos, shaddowOffsetScale)
 			block.sweepStage += 0.85
 		} else if (block.sweepStage < 60 + this.getBlockSize()) {
 			const blockSize = this.getBlockSize()
-			const xPos = 90 + blockSize * block.columnIndex - 30 + block.sweepStage / 2
-			const yPos = 90 + blockSize * block.rowIndex - 30 + block.sweepStage / 2
+			const xPos = leftPadding + blockSize * block.columnIndex - 30 + block.sweepStage / 2
+			const yPos = topPadding + blockSize * block.rowIndex - 30 + block.sweepStage / 2
 			const newBlockSize = blockSize + 60 - block.sweepStage
 			const shaddowOffsetScale = newBlockSize / blockSize
 			this.drawBlock(ctx, block, newBlockSize, xPos, yPos, shaddowOffsetScale)
@@ -289,12 +323,68 @@ class Board extends Entity {
 	}
 
 	/**
+	 * Draw the score
+	 * @param {CanvasRenderingContext2D} ctx - The canvas context
+	 */
+	drawScore(ctx) {
+		// Draw current score text
+		ctx.fillStyle = gameProperties.textColor
+		ctx.font = '5rem Arial'
+		ctx.textAlign = 'center'
+		ctx.fillText(this.score, ctx.canvas.width / 2, 110)
+
+		// Initialize the progress bar properties
+		const progressBarWidth = 450
+		const progressBarHeight = 40
+		const progressBarX = (ctx.canvas.width - progressBarWidth) / 2
+		const progressBarY = 170
+		const progress = Math.max(progressBarHeight / progressBarWidth, this.score / this.targetScore)
+		const radius = progressBarHeight / 2
+
+		// Draw the background of the progress bar
+		ctx.fillStyle = darkenColor(gameProperties.backgroundColor, 40)
+		ctx.beginPath()
+		ctx.moveTo(progressBarX + radius, progressBarY)
+		ctx.arcTo(progressBarX + progressBarWidth, progressBarY, progressBarX + progressBarWidth, progressBarY + progressBarHeight, radius)
+		ctx.arcTo(progressBarX + progressBarWidth, progressBarY + progressBarHeight, progressBarX, progressBarY + progressBarHeight, radius)
+		ctx.arcTo(progressBarX, progressBarY + progressBarHeight, progressBarX, progressBarY, radius)
+		ctx.arcTo(progressBarX, progressBarY, progressBarX + progressBarWidth, progressBarY, radius)
+		ctx.closePath()
+		ctx.fill()
+
+		if (this.score > 0) {
+			// Draw the progress
+			ctx.fillStyle = gameProperties.progressColor
+			ctx.beginPath()
+			ctx.moveTo(progressBarX + radius, progressBarY)
+			ctx.arcTo(progressBarX + progressBarWidth * progress, progressBarY, progressBarX + progressBarWidth * progress, progressBarY + progressBarHeight, radius)
+			ctx.arcTo(progressBarX + progressBarWidth * progress, progressBarY + progressBarHeight, progressBarX, progressBarY + progressBarHeight, radius)
+			ctx.arcTo(progressBarX, progressBarY + progressBarHeight, progressBarX, progressBarY, radius)
+			ctx.arcTo(progressBarX, progressBarY, progressBarX + progressBarWidth * progress, progressBarY, radius)
+			ctx.closePath()
+			ctx.fill()
+		}
+	
+		// Draw the border of the progress bar
+		ctx.strokeStyle = lightenColor(gameProperties.backgroundColor, 10)
+		ctx.lineWidth = 2
+		ctx.beginPath()
+		ctx.moveTo(progressBarX + radius, progressBarY)
+		ctx.arcTo(progressBarX + progressBarWidth, progressBarY, progressBarX + progressBarWidth, progressBarY + progressBarHeight, radius)
+		ctx.arcTo(progressBarX + progressBarWidth, progressBarY + progressBarHeight, progressBarX, progressBarY + progressBarHeight, radius)
+		ctx.arcTo(progressBarX, progressBarY + progressBarHeight, progressBarX, progressBarY, radius)
+		ctx.arcTo(progressBarX, progressBarY, progressBarX + progressBarWidth, progressBarY, radius)
+		ctx.closePath()
+		ctx.stroke()
+	}
+
+	/**
 	 * Returns the size of a block on the board
 	 * @returns {number}
 	 */
 	getBlockSize() {
 		const ctx = this.gameEngine.ctx
-		return (ctx.canvas.width - 180) / this.boardSize
+		return (ctx.canvas.width - leftPadding * 2) / this.boardSize
 	}
 
 	/**
@@ -304,10 +394,10 @@ class Board extends Entity {
 	 */
 	within(x, y) {
 		return (
-			x > 90 - this.getBlockSize() / 2 &&
-			x < 90 + this.getBlockSize() * (this.boardSize + 0.5) &&
-			y > 90 - this.getBlockSize() / 2 &&
-			y < 90 + this.getBlockSize() * (this.boardSize + 0.5)
+			x > leftPadding - this.getBlockSize() / 2 &&
+			x < leftPadding + this.getBlockSize() * (this.boardSize + 0.5) &&
+			y > topPadding - this.getBlockSize() / 2 &&
+			y < topPadding + this.getBlockSize() * (this.boardSize + 0.5)
 		)
 	}
 
@@ -317,8 +407,8 @@ class Board extends Entity {
 	 * @param {number} y - The y-coordinate
 	 */
 	empty(x, y) {
-		const row = Math.round((y - 90) / this.getBlockSize())
-		const column = Math.round((x - 90) / this.getBlockSize())
+		const row = Math.round((y - topPadding) / this.getBlockSize())
+		const column = Math.round((x - leftPadding) / this.getBlockSize())
 
 		if (row >= 0 && row < this.boardSize && column >= 0 && column < this.boardSize) {
 			return this.within(x, y) && !(this.board[row][column] instanceof Block && !this.board[row][column].hint)
@@ -334,8 +424,8 @@ class Board extends Entity {
 	 * @param {number} y - The y-coordinate
 	 */
 	insertBlock(color, x, y) {
-		const rowIndex = Math.round((y - 90) / this.getBlockSize())
-		const columnIndex = Math.round((x - 90) / this.getBlockSize())
+		const rowIndex = Math.round((y - topPadding) / this.getBlockSize())
+		const columnIndex = Math.round((x - leftPadding) / this.getBlockSize())
 
 		if (rowIndex >= 0 && rowIndex < this.boardSize && columnIndex >= 0 && columnIndex < this.boardSize) {
 			this.board[rowIndex][columnIndex] = new Block(color, false, rowIndex, columnIndex)
@@ -361,8 +451,8 @@ class Board extends Entity {
 	 * @param {number} y - The y-coordinate
 	*/
 	insertHintBlock(x, y, color) {
-		const row = Math.round((y - 90) / this.getBlockSize())
-		const column = Math.round((x - 90) / this.getBlockSize())
+		const row = Math.round((y - topPadding) / this.getBlockSize())
+		const column = Math.round((x - leftPadding) / this.getBlockSize())
 		this.board[row][column] = new Block(color, true)
 		this.currentHintColor = color
 	}
@@ -408,18 +498,9 @@ class Board extends Entity {
 				cell.sweepOut(this, -1 * Math.pow(rowIndex, 1.5))
 			}
 		}
-	}
 
-	finalizeSweep() {
-		for (const rowIndex of rowsToSweep) {
-			this.board[rowIndex] = Array(this.boardSize).fill(null)
-		}
-
-		for (const columnIndex of columnsToSweep) {
-			for (const row of this.board) {
-				row[columnIndex] = null
-			}
-		}
+		// Add score based on the rows and columns swept
+		this.addSweepScore(rowsToSweep.length, columnsToSweep.length)
 	}
 
 	/**
@@ -450,6 +531,37 @@ class Board extends Entity {
 	clearSweepHint() {
 		this.rowsSweepHint = []
 		this.columnsSweepHint = []
+	}
+
+	/**
+	 * Adds score to the game based on the shape inserted
+	 * @param {Shape} shape - The shape that was placed
+	 */
+	addShapeScore(shape) {
+		for (const row of shape) {
+			for (const block of row) {
+				if (block == 1) {
+					this.score++
+				}
+			}
+		}
+	}
+
+	/**
+	 * Adds score to the game based on the rows and columns swept
+	 * @param {number} rows - The number of rows swept
+	 * @param {number} columns - The number of columns swept
+	 */
+	addSweepScore(rows, columns) {
+		this.score += (rows + columns) * 10
+	}
+
+	/**
+	 * Checks if the game is won
+	 * @returns {boolean}
+	 */
+	isGameWon() {
+		return this.score >= this.targetScore
 	}
 }
 

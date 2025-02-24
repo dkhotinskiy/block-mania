@@ -36,7 +36,7 @@ const initGame = () => {
 	const gameEngine = new GameEngine(ctx)
 	
 	// Create a new board
-	const board = new Board(gameEngine, gameProperties.boardSize)
+	const board = new Board(gameEngine, gameProperties.boardSize, 500)
 	gameEngine.addEntity(board)
 
 	// Create a new block bag

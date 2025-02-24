@@ -1,6 +1,8 @@
 // Initialize properties of the game
 const gameProperties = {
-	backgroundColor: 'rgba(50, 50, 220, 1)',
+	backgroundColor: '#3232dc',
+	progressColor: '#32acdc',
+	textColor: '#ffffff',
 	height: 1920,
 	width: 1080,
 	boardSize: 8,

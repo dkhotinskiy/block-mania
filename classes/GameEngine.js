@@ -199,6 +199,22 @@ class GameEngine {
 		// Remove entities that should be removed
 		this.entities = this.entities.filter(entity => !entity.removeFromWorld)
 	}
+
+	/**
+	 * Set the game to won
+	 */
+	gameWon() {
+		alert('You won!')
+		window.location.reload()
+	}
+
+	/**
+	 * Set the game to lost
+	 */
+	gameLost() {
+		alert('You lost!')
+		window.location.reload()
+	}
 }
 
 export default GameEngine
