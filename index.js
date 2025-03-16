@@ -33,10 +33,11 @@ const initGame = () => {
 	// Set image smoothing for the context
 	ctx.imageSmoothingEnabled = gameProperties.imageSmoothing
 
-	const gameEngine = new GameEngine(ctx)
+	const level = parseInt(localStorage.getItem('level'))
+	const gameEngine = new GameEngine(ctx, isNaN(level) ? 1 : level)
 	
 	// Create a new board
-	const board = new Board(gameEngine, gameProperties.boardSize, 500)
+	const board = new Board(gameEngine, gameProperties.boardSize, isNaN(level) ? 1 : level)
 	gameEngine.addEntity(board)
 
 	// Create a new block bag

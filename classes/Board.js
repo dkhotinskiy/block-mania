@@ -4,6 +4,7 @@ import Entity from './Entity.js'
 import Shape from './Shape.js'
 import ShapeBag from './ShapeBag.js'
 import gameProperties from '../gameProperties.js'
+import GameEngine from './GameEngine.js'
 
 const topPadding = 270
 const leftPadding = 90
@@ -12,7 +13,13 @@ const leftPadding = 90
  * Represents a game board
  */
 class Board extends Entity {
-	constructor(gameEngine, boardSize, targetScore) {
+	/**
+	 * Creates a new board
+	 * @param {GameEngine} gameEngine - The game engine
+	 * @param {number} boardSize - The size of the board
+	 * @param {number} level - The level of the game
+	 */
+	constructor(gameEngine, boardSize, level) {
 		super(gameEngine, 0, 0, 0, 0)
 
 		/**
@@ -81,10 +88,16 @@ class Board extends Entity {
 		this.score = 0
 
 		/**
+		 * The level of the game
+		 * @type {number}
+		 */
+		this.level = level
+
+		/**
 		 * The target score of the game
 		 * @type {number}
 		 */
-		this.targetScore = targetScore
+		this.targetScore = level % 3 == 0 ? level * 100 : level % 5 ? level * 250 : level % 10 ? level * 50 : level * 150
 
 		this.draw()
 	}
@@ -215,7 +228,7 @@ class Board extends Entity {
 		this.drawScore(ctx)
 
 		if (this.isGameWon()) {
-			this.gameEngine.gameWon()
+			this.gameEngine.levelWon()
 		}
 
 		// Check if the game is lost
@@ -224,7 +237,7 @@ class Board extends Entity {
 			this.shapeBag instanceof ShapeBag &&
 			this.isGameLost()
 		) {
-			this.gameEngine.gameLost()
+			this.gameEngine.levelLost()
 		}
 	}
 
@@ -331,14 +344,14 @@ class Board extends Entity {
 		ctx.fillStyle = gameProperties.textColor
 		ctx.font = '5rem Arial'
 		ctx.textAlign = 'center'
-		ctx.fillText(this.score, ctx.canvas.width / 2, 110)
+		ctx.fillText(this.score, ctx.canvas.width / 2, 100)
 
 		// Initialize the progress bar properties
 		const progressBarWidth = 450
 		const progressBarHeight = 40
 		const progressBarX = (ctx.canvas.width - progressBarWidth) / 2
-		const progressBarY = 170
-		const progress = Math.max(progressBarHeight / progressBarWidth, this.score / this.targetScore)
+		const progressBarY = 130
+		const progress = Math.min(Math.max(progressBarHeight / progressBarWidth, this.score / this.targetScore), 1)
 		const radius = progressBarHeight / 2
 
 		// Draw the background of the progress bar
@@ -376,6 +389,11 @@ class Board extends Entity {
 		ctx.arcTo(progressBarX, progressBarY, progressBarX + progressBarWidth, progressBarY, radius)
 		ctx.closePath()
 		ctx.stroke()
+
+		// Draw target score text
+		ctx.fillStyle = gameProperties.textColor
+		ctx.font = '2rem Arial'
+		ctx.fillText(`Level ${this.level} - Earn ${this.targetScore} Points`, ctx.canvas.width / 2, 220)
 	}
 
 	/**
