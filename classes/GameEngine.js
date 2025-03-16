@@ -13,13 +13,20 @@ class GameEngine {
 	 * Create a new game engine
 	 * @param {CanvasRenderingContext2D} ctx - The context of the canvas
 	 * @param {AssetManager} assetManager - The asset manager of the game
+	 * @param {number} level - The level of the game
 	 */
-	constructor(ctx) {
+	constructor(ctx, level) {
 		/**
 		 * The context of the canvas
 		 * @type {CanvasRenderingContext2D}
 		 */
 		this.ctx = ctx
+
+		/**
+		 * The level of the game
+		 * @type {number}
+		 */
+		this.level = level
 
 		/**
 		 * Stores the coordinates of the mouse move event
@@ -203,17 +210,21 @@ class GameEngine {
 	/**
 	 * Set the game to won
 	 */
-	gameWon() {
-		alert('You won!')
-		window.location.reload()
+	levelWon() {
+		const messageEl = document.querySelector('[data-messages]')
+		messageEl.dataset.messages = 'won'
+		this.debug('Level won')
+
+		localStorage.setItem('level', `${this.level + 1}`)
 	}
 
 	/**
 	 * Set the game to lost
 	 */
-	gameLost() {
-		alert('You lost!')
-		window.location.reload()
+	levelLost() {
+		const messageEl = document.querySelector('[data-messages]')
+		messageEl.dataset.messages = 'lost'
+		this.debug('Game lost')
 	}
 }
 

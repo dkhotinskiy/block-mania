@@ -2,7 +2,7 @@
 <html lang='en'>
 	<head>
 		<meta charset='UTF-8' />
-		<meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+		<meta name='viewport' content='viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no' />
         <link rel='stylesheet' href='index.css' />
 		<title>Block Mania</title>
 	</head>
@@ -10,6 +10,17 @@
 		<span>
 			<canvas id='game' tabindex='0' autofocus />
 		</span>
+
+		<div data-messages>
+			<div data-lost-message>
+				<p>You lost!</p>
+				<button onclick='window.location.reload()'>Try Again</button>
+			</div>
+			<div data-won-message>
+				<p>You won!</p>
+				<button onclick='window.location.reload()'>Continue to the Next Level</button>
+			</div>
+		</div>
 
         <script src='index.js' type='module'></script>
 	</body>

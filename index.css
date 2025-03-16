@@ -34,3 +34,58 @@ canvas {
 canvas:focus {
 	outline: 0;
 }
+
+[data-messages] {
+	position: absolute;
+	background: rgba(0, 0, 0, 0.4);
+	backdrop-filter: blur(0.75rem);
+	color: white;
+	padding: 3rem 8rem;
+	min-width: 30rem;
+	border-radius: 10px;
+	text-align: center;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+	display: none;
+}
+
+[data-messages] p {
+	margin-bottom: 3rem;
+	font-size: 2rem;
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+[data-messages] button {
+	background: #007bff;
+	color: white;
+	border: none;
+	padding: 10px 20px;
+	border-radius: 5px;
+	cursor: pointer;
+	font-size: 1rem;
+	transition: background 0.3s ease;
+}
+
+[data-messages] button:hover {
+	background: #0056b3;
+}
+
+[data-lost-message] {
+	display: none;
+}
+
+[data-won-message] {
+	display: none;
+}
+
+[data-messages=lost],
+[data-messages=won] {
+	display: block;
+}
+
+[data-messages=lost] [data-lost-message] {
+	display: block;
+}
+
+[data-messages=won] [data-won-message] {
+	display: block;
+}
